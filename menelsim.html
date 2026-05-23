@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symulator Menela</title>
+
+<style>
+
+body{
+    margin:0;
+    background:#151515;
+    color:white;
+    font-family:Arial;
+}
+
+#startScreen{
+    text-align:center;
+    margin-top:100px;
+}
+
+#game{
+    display:none;
+    padding:20px;
+}
+
+.panel{
+    background:#242424;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:15px;
+    box-shadow:0 0 10px black;
+}
+
+button{
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    background:#444;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#666;
+}
+
+input{
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    width:250px;
+}
+
+#log{
+    background:black;
+    height:250px;
+    overflow-y:auto;
+    padding:10px;
+    border-radius:10px;
+}
+
+.bar{
+    background:#444;
+    height:20px;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.fill{
+    background:lime;
+    width:100%;
+    height:100%;
+}
+
+.shop-item{
+    background:#333;
+    padding:10px;
+    border-radius:10px;
+    margin:10px 0;
+}
+
+.tab{
+    display:none;
+}
+
+.active{
+    display:block;
+}
+
+.enemy{
+    background:#500;
+    padding:10px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+
+    <h1>🍺 SYMULATOR MENELA 🍺</h1>
+
+    <button onclick="loadGame()">📂 Wczytaj Grę</button>
+
+    <br><br>
+
+    <p>Wpisz swoją legendarną ksywkę:</p>
+
+    <input type="text" id="nickname" placeholder="Np. Król Żubra">
+
+    <br><br>
+
+    <button onclick="startGame()">🔥 NOWA GRA</button>
+
+</div>
+
+<div id="game">
+
+    <div class="panel">
+
+        <h2 id="playerName"></h2>
+
+        💰 Hajsy: <span id="money">50</span> zł<br><br>
+        🍺 Alkohol: <span id="alcohol">0</span>%<br><br>
+        😴 Energia: <span id="energy">100</span><br><br>
+        ⭐ Respect: <span id="respect">0</span><br><br>
+        🏚️ Dom: <span id="house">Brak</span><br><br>
+        👕 Outfit: <span id="outfit">Szmata</span><br><br>
+        📅 Dzień: <span id="day">1</span><br><br>
+
+        ❤️ Zdrowie:
+
+        <div class="bar">
+            <div class="fill" id="healthBar"></div>
+        </div>
+
+    </div>
+
+    <div class="panel">
+
+        <button onclick="showTab('actions')">Akcje</button>
+        <button onclick="showTab('shop')">Sklep</button>
+        <button onclick="showTab('fight')">Bijatyki</button>
+        <button onclick="showTab('casino')">Kasyno</button>
+        <button onclick="showTab('work')">Praca</button>
+        <button onclick="saveGame()">💾 Zapisz</button>
+
+    </div>
+
+    <div id="actions" class="tab active panel">
+
+        <h2>🔥 Codzienne życie</h2>
+
+        <button onclick="searchTrash()">🗑️ Szukaj w śmietniku</button>
+        <button onclick="drinkBeer()">🍺 Wypij piwo</button>
+        <button onclick="sleep()">😴 Śpij</button>
+        <button onclick="beg()">🙏 Żebraj</button>
+        <button onclick="steal()">🕵️ Kradnij</button>
+        <button onclick="randomEvent()">🎲 Losowe zdarzenie</button>
+
+    </div>
+
+    <div id="shop" class="tab panel">
+
+        <h2>🛒 Sklep</h2>
+
+        <div class="shop-item">
+            🍺 Tanie Piwo - 10 zł
+            <button onclick="buyBeer()">Kup</button>
+        </div>
+
+        <div class="shop-item">
+            🍾 Wóda - 40 zł
+            <button onclick="buyVodka()">Kup</button>
+        </div>
+
+        <div class="shop-item">
+            👕 Dres - 100 zł
+            <button onclick="buyOutfit()">Kup</button>
+        </div>
+
+        <div class="shop-item">
+            🏚️ Karton Premium - 250 zł
+            <button onclick="buyHouse()">Kup</button>
+        </div>
+
+        <div class="shop-item">
+            🚲 Stary Rower - 500 zł
+            <button onclick="buyBike()">Kup</button>
+        </div>
+
+    </div>
+
+    <div id="fight" class="tab panel">
+
+        <h2>👊 Osiedlowe walki</h2>
+
+        <button onclick="fightEnemy()">Walcz z Sebą</button>
+
+        <div id="enemyArea"></div>
+
+    </div>
+
+    <div id="casino" class="tab panel">
+
+        <h2>🎰 Kasyno</h2>
+
+        <button onclick="gamble()">Hazard</button>
+
+    </div>
+
+    <div id="work" class="tab panel">
+
+        <h2>💼 Praca</h2>
+
+        <button onclick="collectBottles()">🍾 Zbieraj butelki</button>
+        <button onclick="washCars()">🚗 Myj auta</button>
+        <button onclick="streetConcert()">🎸 Graj na ulicy</button>
+
+    </div>
+
+    <div class="panel">
+
+        <h2>📜 Log</h2>
+
+        <div id="log"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+let player = {
+    name:"",
+    money:50,
+    alcohol:0,
+    energy:100,
+    health:100,
+    respect:0,
+    house:"Brak",
+    outfit:"Szmata",
+    day:1
+};
+
+function startGame(){
+
+    let nick = document.getElementById("nickname").value;
+
+    if(nick.trim() == ""){
+        alert("Podaj nazwę!");
+        return;
+    }
+
+    player.name = nick;
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("game").style.display = "block";
+
+    updateUI();
+
+    log("🔥 Rozpoczynasz nowe życie ulicznego wojownika.");
+}
+
+function updateUI(){
+
+    document.getElementById("playerName").innerText =
+        "👑 " + player.name;
+
+    document.getElementById("money").innerText = player.money;
+    document.getElementById("alcohol").innerText = player.alcohol;
+    document.getElementById("energy").innerText = player.energy;
+    document.getElementById("respect").innerText = player.respect;
+    document.getElementById("house").innerText = player.house;
+    document.getElementById("outfit").innerText = player.outfit;
+    document.getElementById("day").innerText = player.day;
+
+    document.getElementById("healthBar").style.width =
+        player.health + "%";
+
+    if(player.health > 60){
+        document.getElementById("healthBar").style.background = "lime";
+    }
+    else if(player.health > 30){
+        document.getElementById("healthBar").style.background = "orange";
+    }
+    else{
+        document.getElementById("healthBar").style.background = "red";
+    }
+
+}
+
+function log(text){
+
+    let logDiv = document.getElementById("log");
+
+    logDiv.innerHTML += "<div>> " + text + "</div>";
+
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function showTab(tab){
+
+    let tabs = document.querySelectorAll(".tab");
+
+    tabs.forEach(t => {
+        t.classList.remove("active");
+    });
+
+    document.getElementById(tab).classList.add("active");
+}
+
+function nextDay(){
+
+    player.day++;
+
+    player.energy -= 10;
+
+    if(player.energy < 0){
+        player.energy = 0;
+    }
+
+    if(player.alcohol > 0){
+        player.alcohol -= 5;
+    }
+
+    if(player.health <= 0){
+        gameOver();
+    }
+
+    updateUI();
+}
+
+function searchTrash(){
+
+    let cash = Math.floor(Math.random()*40);
+
+    player.money += cash;
+
+    player.energy -= 5;
+
+    log("🗑️ Znalazłeś " + cash + " zł w śmietniku.");
+
+    chanceEvent();
+
+    nextDay();
+}
+
+function drinkBeer(){
+
+    player.alcohol += 10;
+
+    player.health -= 2;
+
+    player.respect += 1;
+
+    log("🍺 Wypiłeś mocne piwo.");
+
+    nextDay();
+}
+
+function sleep(){
+
+    player.energy += 40;
+
+    if(player.energy > 100){
+        player.energy = 100;
+    }
+
+    player.health += 10;
+
+    if(player.health > 100){
+        player.health = 100;
+    }
+
+    log("😴 Przespałeś się za śmietnikiem.");
+
+    nextDay();
+}
+
+function beg(){
+
+    let cash = Math.floor(Math.random()*60);
+
+    player.money += cash;
+
+    log("🙏 Ludzie dali ci " + cash + " zł.");
+
+    nextDay();
+}
+
+function steal(){
+
+    let success = Math.random();
+
+    if(success > 0.5){
+
+        let amount = Math.floor(Math.random()*120);
+
+        player.money += amount;
+
+        player.respect += 5;
+
+        log("🕵️ Udana kradzież! +" + amount + " zł");
+
+    }
+    else{
+
+        player.health -= 20;
+
+        log("🚓 Ochrona cię dojechała.");
+
+    }
+
+    nextDay();
+}
+
+function randomEvent(){
+
+    let events = [
+
+        "🚔 Policja cię spisała.",
+        "🍺 Dostałeś darmowe piwo.",
+        "🐕 Gonił cię pies.",
+        "💰 Znalazłeś portfel.",
+        "🤢 Zjadłeś starego kebsa.",
+        "🔥 Rozpaliłeś ognisko.",
+        "🎸 Spotkałeś grajka."
+
+    ];
+
+    let event = events[
+        Math.floor(Math.random()*events.length)
+    ];
+
+    log(event);
+
+    if(event.includes("portfel")){
+        player.money += 100;
+    }
+
+    if(event.includes("darmowe")){
+        player.alcohol += 15;
+    }
+
+    if(event.includes("kebsa")){
+        player.health -= 15;
+    }
+
+    nextDay();
+}
+
+function buyBeer(){
+
+    if(player.money >= 10){
+
+        player.money -= 10;
+
+        player.alcohol += 10;
+
+        log("🍺 Kupiłeś piwo.");
+
+    }
+    else{
+        log("❌ Za mało hajsu.");
+    }
+
+    updateUI();
+}
+
+function buyVodka(){
+
+    if(player.money >= 40){
+
+        player.money -= 40;
+
+        player.alcohol += 30;
+
+        player.respect += 5;
+
+        log("🍾 Kupiłeś wódę.");
+
+    }
+    else{
+        log("❌ Nie stać cię.");
+    }
+
+    updateUI();
+}
+
+function buyOutfit(){
+
+    if(player.money >= 100){
+
+        player.money -= 100;
+
+        player.outfit = "Dres";
+
+        player.respect += 10;
+
+        log("👕 Nowy dres zakupiony.");
+
+    }
+    else{
+        log("❌ Za biedny.");
+    }
+
+    updateUI();
+}
+
+function buyHouse(){
+
+    if(player.money >= 250){
+
+        player.money -= 250;
+
+        player.house = "Karton Premium";
+
+        player.respect += 20;
+
+        log("🏚️ Masz nowy karton premium.");
+
+    }
+    else{
+        log("❌ Brak hajsu.");
+    }
+
+    updateUI();
+}
+
+function buyBike(){
+
+    if(player.money >= 500){
+
+        player.money -= 500;
+
+        player.respect += 30;
+
+        log("🚲 Kupiłeś rower.");
+
+    }
+    else{
+        log("❌ Za mało pieniędzy.");
+    }
+
+    updateUI();
+}
+
+function gamble(){
+
+    if(player.money < 50){
+
+        log("❌ Potrzeba 50 zł.");
+
+        return;
+    }
+
+    let luck = Math.random();
+
+    if(luck > 0.5){
+
+        player.money += 100;
+
+        log("🎰 Wygrałeś!");
+
+    }
+    else{
+
+        player.money -= 50;
+
+        log("💀 Przegrałeś.");
+
+    }
+
+    updateUI();
+}
+
+function fightEnemy(){
+
+    let yourAttack =
+        Math.floor(Math.random()*40);
+
+    let enemyAttack =
+        Math.floor(Math.random()*30);
+
+    player.health -= enemyAttack;
+
+    let area =
+        document.getElementById("enemyArea");
+
+    area.innerHTML = `
+
+    <div class="enemy">
+
+        👊 Walka zakończona!<br><br>
+
+        Zadałeś: ${yourAttack} dmg<br>
+        Dostałeś: ${enemyAttack} dmg
+
+    </div>
+
+    `;
+
+    if(yourAttack > enemyAttack){
+
+        player.money += 80;
+
+        player.respect += 15;
+
+        log("🏆 Wygrałeś bójkę!");
+
+    }
+    else{
+
+        log("💀 Seba cię rozwalił.");
+
+    }
+
+    if(player.health <= 0){
+        gameOver();
+    }
+
+    updateUI();
+}
+
+function collectBottles(){
+
+    let cash = Math.floor(Math.random()*80);
+
+    player.money += cash;
+
+    player.energy -= 10;
+
+    log("🍾 Sprzedałeś butelki za " + cash + " zł.");
+
+    nextDay();
+}
+
+function washCars(){
+
+    let cash = Math.floor(Math.random()*120);
+
+    player.money += cash;
+
+    player.energy -= 20;
+
+    log("🚗 Umyłeś auta. +" + cash + " zł");
+
+    nextDay();
+}
+
+function streetConcert(){
+
+    let cash = Math.floor(Math.random()*150);
+
+    player.money += cash;
+
+    player.respect += 5;
+
+    log("🎸 Ludzie dali ci " + cash + " zł.");
+
+    nextDay();
+}
+
+function chanceEvent(){
+
+    let chance = Math.random();
+
+    if(chance > 0.8){
+
+        player.money += 200;
+
+        log("💰 Jackpot! +200 zł");
+
+    }
+
+    if(chance < 0.2){
+
+        player.health -= 10;
+
+        log("🤕 Skaleczyłeś się.");
+
+    }
+}
+
+function saveGame(){
+
+    localStorage.setItem(
+        "menelSave",
+        JSON.stringify(player)
+    );
+
+    log("💾 Gra zapisana.");
+}
+
+function loadGame(){
+
+    let save =
+        localStorage.getItem("menelSave");
+
+    if(save){
+
+        player = JSON.parse(save);
+
+        document.getElementById("startScreen")
+            .style.display = "none";
+
+        document.getElementById("game")
+            .style.display = "block";
+
+        updateUI();
+
+        log("📂 Wczytano zapis gry.");
+
+    }
+    else{
+
+        alert("❌ Nie znaleziono zapisu.");
+
+    }
+}
+
+function gameOver(){
+
+    alert("☠️ KONIEC GRY ☠️");
+
+    localStorage.removeItem("menelSave");
+
+    location.reload();
+}
+
+setInterval(() => {
+
+    if(player.alcohol > 80){
+
+        player.health -= 1;
+
+        log("🤢 Jesteś totalnie narąbany.");
+
+        updateUI();
+
+    }
+
+}, 5000);
+
+</script>
+
+</body>
+</html>
